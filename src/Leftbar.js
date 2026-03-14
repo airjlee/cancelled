@@ -6,6 +6,7 @@ import EmailIcon from "@mui/icons-material/Email";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import VideocamOutlinedIcon from "@mui/icons-material/VideocamOutlined";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
+
 function Leftbar() {
   const createIcon = (Icon, title, selected) => (
     <div className={`leftbar-option${selected ? "-active" : ""}`}>

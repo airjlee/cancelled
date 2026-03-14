@@ -6,76 +6,75 @@ import Navi from "./Navi";
 import { Routes, Route, Navigate, BrowserRouter } from "react-router-dom";
 import SingleMailPage from "./SingleMailPage";
 import Draft from "./Draft";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { selectDraft, selectNaviIndex } from "./features/mailSlice";
-import Login from "./Login";
-import { login, logout, selectUser } from "./features/userSlice";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "./firebase";
 import Inbox from "./Inbox";
 import Sentbox from "./Sentbox";
+import { colRef, db } from "./firebase";
+import { getDocs, query, where, limit, writeBatch, doc, Timestamp } from "firebase/firestore";
+import { testdata } from "./testdata";
 
 function App() {
   const draftOpen = useSelector(selectDraft);
-  const account = useSelector(selectUser);
   const naviIndex = useSelector(selectNaviIndex);
-  const dispatch = useDispatch();
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // user signed in
-        dispatch(
-          login({
-            email: user.email,
-            uid: user.uid,
-          })
-        );
-      } else {
-        // user signed out
-        dispatch(logout());
+    const seedIfEmpty = async () => {
+      const q = query(
+        colRef,
+        where("to", "==", "demo@gcmail.com"),
+        limit(1)
+      );
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) {
+        const batch = writeBatch(db);
+        testdata.forEach((mail) => {
+          const docRef = doc(colRef);
+          batch.set(docRef, {
+            ...mail,
+            createAt: mail.createAt instanceof Date ? Timestamp.fromDate(mail.createAt) : mail.createAt,
+          });
+        });
+        await batch.commit();
       }
-    });
-  }, [dispatch]);
+    };
+    seedIfEmpty();
+  }, []);
 
   return (
     <div className="app">
-      {!account ? (
-        <Login />
-      ) : (
-        <BrowserRouter>
-          <Leftbar />
-          <div className="app-main">
-            <Header />
-            <div className="app-body">
-              <Navi />
-              <div className="app-inner">
-                <Routes>
-                  {/* default route to "/inbox" */}
-                  <Route
-                    path="/"
-                    element={
-                      <Navigate
-                        to={naviIndex === 0 ? "/inbox" : "/sent"}
-                        replace={true}
-                      />
-                    }
-                  />
-                  <Route path="inbox" element={<Inbox />} />
-                  <Route path="sent" element={<Sentbox />} />
-                  <Route path="mail" element={<SingleMailPage />} />
-                  {/* default route */}
-                  <Route
-                    path="*"
-                    element={<Navigate to="/" replace={true} />}
-                  />
-                </Routes>
-              </div>
+      <BrowserRouter>
+        <Leftbar />
+        <div className="app-main">
+          <Header />
+          <div className="app-body">
+            <Navi />
+            <div className="app-inner">
+              <Routes>
+                {/* default route to "/inbox" */}
+                <Route
+                  path="/"
+                  element={
+                    <Navigate
+                      to={naviIndex === 0 ? "/inbox" : "/sent"}
+                      replace={true}
+                    />
+                  }
+                />
+                <Route path="inbox" element={<Inbox />} />
+                <Route path="sent" element={<Sentbox />} />
+                <Route path="mail" element={<SingleMailPage />} />
+                {/* default route */}
+                <Route
+                  path="*"
+                  element={<Navigate to="/" replace={true} />}
+                />
+              </Routes>
             </div>
           </div>
-          {draftOpen && <Draft />}
-        </BrowserRouter>
-      )}
+        </div>
+        {draftOpen && <Draft />}
+      </BrowserRouter>
     </div>
   );
 }

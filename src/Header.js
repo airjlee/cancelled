@@ -9,23 +9,16 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
-import { signOut } from "firebase/auth";
-import { auth } from "./firebase";
-import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { closeDraft } from "./features/mailSlice";
 import { selectUser } from "./features/userSlice";
 
 function Header() {
-  const navigate = useNavigate();
   const dispatch = useDispatch();
   const account = useSelector(selectUser);
 
   const logoutApp = () => {
-    dispatch(closeDraft()); // * close draft component
-    signOut(auth).then(() => {
-      navigate("/");
-    });
+    dispatch(closeDraft());
   };
 
   const rightIcon = (Icon, onClick) => (
