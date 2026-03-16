@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import "./App.css";
 import Leftbar from "./Leftbar";
 import Header from "./Header";
@@ -11,34 +11,33 @@ import { selectDraft, selectNaviIndex } from "./features/mailSlice";
 import Inbox from "./Inbox";
 import Sentbox from "./Sentbox";
 import { colRef, db } from "./firebase";
-import { getDocs, query, where, limit, writeBatch, doc, Timestamp } from "firebase/firestore";
+import { getDocs, query, where, writeBatch, doc, Timestamp } from "firebase/firestore";
 import { testdata } from "./testdata";
 
 function App() {
   const draftOpen = useSelector(selectDraft);
   const naviIndex = useSelector(selectNaviIndex);
+  const seeded = useRef(false);
 
   useEffect(() => {
-    const seedIfEmpty = async () => {
-      const q = query(
-        colRef,
-        where("to", "==", "demo@gcmail.com"),
-        limit(1)
-      );
-      const snapshot = await getDocs(q);
-      if (snapshot.empty) {
-        const batch = writeBatch(db);
-        testdata.forEach((mail) => {
-          const docRef = doc(colRef);
-          batch.set(docRef, {
-            ...mail,
-            createAt: mail.createAt instanceof Date ? Timestamp.fromDate(mail.createAt) : mail.createAt,
-          });
+    if (seeded.current) return;
+    seeded.current = true;
+
+    const resetAndSeed = async () => {
+      const allSnap = await getDocs(query(colRef, where("to", "==", "you@gmail.com")));
+
+      const batch = writeBatch(db);
+      allSnap.docs.forEach((d) => batch.delete(d.ref));
+      testdata.forEach((mail) => {
+        const docRef = doc(colRef);
+        batch.set(docRef, {
+          ...mail,
+          createAt: mail.createAt instanceof Date ? Timestamp.fromDate(mail.createAt) : mail.createAt,
         });
-        await batch.commit();
-      }
+      });
+      await batch.commit();
     };
-    seedIfEmpty();
+    resetAndSeed();
   }, []);
 
   return (

@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  account: { email: "demo@gcmail.com", uid: "demo" },
+  account: { email: "you@gmail.com", uid: "demo" },
 };
 
 export const userSlice = createSlice({

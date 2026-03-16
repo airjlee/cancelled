@@ -81,15 +81,14 @@ function SingleMailPage() {
               <Avatar />
               <div className="mail-sender-left-mail">
                 <p className="up">
-                  {"<"}
-                  {selectedEmail.sender}
-                  {">"}
+                  {selectedEmail.senderName || selectedEmail.sender}
+                  {selectedEmail.senderName && (
+                    <span className="sender-email"> &lt;{selectedEmail.sender}&gt;</span>
+                  )}
                 </p>
                 <div className="down">
                   <p>
-                    sent to {"<"}
-                    {selectedEmail.to}
-                    {">"}
+                    to &lt;{selectedEmail.to}&gt;
                   </p>
                   <ArrowDropDownRoundedIcon fontSize="small" />
                 </div>
@@ -103,7 +102,7 @@ function SingleMailPage() {
             </div>
           </div>
           <div className="mail-content">
-            <p>{selectedEmail.content}</p>
+            {selectedEmail.content}
           </div>
           <div className="mail-bottom">
             <Button

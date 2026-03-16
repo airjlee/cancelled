@@ -47,15 +47,17 @@ function MailList({ naviIndex, emails }) {
       <div className="maillist-rows">
         {emails.map(({ id, data }) => (
           <EmailRow
-            key={id} // ! Must have unique key attribute
+            key={id}
             uid={id}
-            displayWho={naviIndex === 0 ? data.sender : data.to}
+            displayWho={naviIndex === 0 ? (data.senderName || data.sender) : data.to}
             sender={data.sender}
+            senderName={data.senderName}
             to={data.to}
             subject={data.subject}
             content={data.content}
             time={data.time}
             unread={naviIndex === 0 && data.unread}
+            starred={data.starred}
           />
         ))}
       </div>
